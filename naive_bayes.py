@@ -96,6 +96,7 @@ def create_and_save_submission(predictions, file_name="submission.csv"):
     sub_df = pd.DataFrame(data=list(zip(ids, predictions)), columns=["Id","Category"])
     sub_df.to_csv(file_name, index=False)
 
+# Return mean model performance after k-fold cross-validation
 def evaluate_model(Model, X, y):
     
     kfold = KFold(
@@ -111,21 +112,30 @@ def evaluate_model(Model, X, y):
         y_train, y_test = y[train_index], y[test_index]
         
         my_model = Model(X_train, y_train)
-        pred = my_model.predict_class(X_test)
-        accuracy.append(my_model.accuracy(pred, y_test))
+        predicitions = my_model.predict_class(X_test)
+        accuracy.append(my_model.accuracy(predicitions, y_test))
     
     return np.mean(accuracy)
-    
+
+# Train with full dataset; write test data label predictions to .csv file
+def predict_test_labels(Model, X, y, X_test):
+    my_model = Model(X, y)
+    predicitions = my_model.predict_class(X_test)
+    create_and_save_submission(predicitions)
 
 def main():
     train_data = pd.read_pickle(TRAIN_DATA_PATH)
-    test_data = pd.read_pickle(TEST_DATA_PATH)
-    
+    X_test     = pd.read_pickle(TEST_DATA_PATH)
+
     X = np.array(train_data[0])
     y = np.array(train_data[1])
 
+    # Print performance of model after k-fold cross-validation
     accuracy = evaluate_model(Naive_Bayes, X, y)
     print("Accuracy: %.2f"%accuracy)
+
+    # Train with full dataset; write test data label predictions to .csv file
+    predict_test_labels(Naive_Bayes, X, y, X_test)
 
 if  __name__ == "__main__":
     main()
