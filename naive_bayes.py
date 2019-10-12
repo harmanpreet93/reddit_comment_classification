@@ -17,7 +17,7 @@ class Naive_Bayes:
         self.train_Y = train_Y
         self.classes = list(set(train_Y))
         self.stop_words_list = stop_words_list
-        self.word_stats, self.num_words_in_class, self.total_word_count_per_class = self.get_word_count_per_class()
+        self.word_stats, self.num_unique_words_in_class, self.total_word_count_per_class = self.get_word_count_per_class()
         self.priors = self.get_priors()
 
     # pre-processing dataset
@@ -39,51 +39,47 @@ class Naive_Bayes:
 
     # bag of word features - get dictionary of word count per class
     def get_word_count_per_class(self):
-        word_stats, num_words_in_class, words_count_per_class = {}, {}, {}
+        word_stats, num_unique_words_in_class, words_count_per_class = {}, {}, {}
         for class_ in self.classes:
+            
+            # create a list of all words in the class
             word_list = []
             for review in self.train_X[self.train_Y == class_]:
                 word_list += self.preprocess_sentence(review)
-            num_words_in_class[class_] = len(set(word_list))
+
+            # count the number of unique words and occurences of each word
+            num_unique_words_in_class[class_] = len(set(word_list))
             word_stats[class_] = Counter(word_list)
 
             # get dictionary of total word count per class
-            total_words_count = 0
-            for w, count in word_stats[class_].items():
-                total_words_count += count
-            words_count_per_class[class_] = total_words_count
+            words_count_per_class[class_] = len(word_list)
 
-        return word_stats, num_words_in_class, words_count_per_class
-
-    # return random classification
-    def random_classifier(self):
-        return self.classes[random.randint(0, len(self.classes) - 1)]
+        return word_stats, num_unique_words_in_class, words_count_per_class
 
     # test accuracy
     def accuracy(self, predicted, target):
         return np.mean(predicted == target) * 100.00
 
+    def compute_probability(self, class_, word_list, laplacian, alpha):
+        prob = self.priors[class_]
+        # override alpha value by setting it 0 if it isn't laplacian
+        if not laplacian:
+            alpha = 0.0
+        denominator_count = self.total_word_count_per_class[class_] + alpha*self.num_unique_words_in_class[class_]
+        for word in word_list:
+            prob *= ((self.word_stats[class_][word] + alpha) / denominator_count)
+        
+        return prob
+    
     # predict
-    def predict_class(self, test_sentences_list, preprocess=True, laplacian=True, alpha=0.5):
+    def predict_class(self, test_sentences_list, laplacian=True, alpha=0.25):
         # Naive Bayes: for all classes, argmax P(c)*P(d|c)
         predicted_classes = np.zeros(len(test_sentences_list), dtype=np.object)
         for index, test_sentence in enumerate(test_sentences_list):
-            if preprocess:
-                word_list = self.preprocess_sentence(test_sentence)
-            else:
-                word_list = test_sentence.split()
+            word_list = self.preprocess_sentence(test_sentence)
             probabilities = np.zeros(len(self.classes))
             for idx, class_ in enumerate(self.classes):
-                # get probability of class
-                prob = self.priors[class_]
-                # override alpha value by setting it 0 if it isn't laplacian
-                if not laplacian:
-                    alpha = 0.0
-                denominator_count = self.total_word_count_per_class[class_] + alpha*self.num_words_in_class[class_]
-                for word in word_list:
-                    prob *= ((self.word_stats[class_][word] + alpha) / denominator_count)
-
-                probabilities[idx] = prob
+                probabilities[idx] = self.compute_probability(class_, word_list, laplacian, alpha)
 
             predicted_classes[index] = self.classes[np.argmax(probabilities)]
 
@@ -125,10 +121,11 @@ def predict_test_labels(Model, X, y, X_test):
 
 def main():
     train_data = pd.read_pickle(TRAIN_DATA_PATH)
-    X_test     = pd.read_pickle(TEST_DATA_PATH)
+    test_data  = pd.read_pickle(TEST_DATA_PATH)
 
-    X = np.array(train_data[0])
-    y = np.array(train_data[1])
+    X      = np.array(train_data[0])
+    y      = np.array(train_data[1])
+    X_test = np.array(test_data)
 
     # Print performance of model after k-fold cross-validation
     accuracy = evaluate_model(Naive_Bayes, X, y)
