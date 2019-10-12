@@ -6,6 +6,7 @@ from nltk.corpus import stopwords
 import random
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
+from nltk.stem import PorterStemmer
 
 TRAIN_DATA_PATH = "data/data_train.pkl"
 TEST_DATA_PATH = "data/data_test.pkl"
@@ -17,6 +18,7 @@ class Naive_Bayes:
         self.train_Y = train_Y
         self.classes = list(set(train_Y))
         self.stop_words_list = stop_words_list
+        self.stemmer = PorterStemmer()
         self.word_stats, self.num_unique_words_in_class, self.total_word_count_per_class = self.get_word_count_per_class()
         self.priors = self.get_priors()
 
@@ -27,7 +29,8 @@ class Naive_Bayes:
         # remove special characters and stop words
         pattern = re.compile(r'\b\w\w+\b')
         # for word in re.findall(pattern, sentence):
-        sentence = [word for word in re.findall(pattern, sentence.lower()) if word not in self.stop_words_list]
+        sentence = [self.stemmer.stem(word) for word in re.findall(pattern, sentence.lower()) if word not in self.stop_words_list]
+        
         return sentence
 
     def get_priors(self):
