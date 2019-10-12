@@ -5,11 +5,14 @@ import pandas as pd
 from nltk.corpus import stopwords
 import random
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import KFold
 
+TRAIN_DATA_PATH = "data/data_train.pkl"
+TEST_DATA_PATH = "data/data_test.pkl"
 
 class Naive_Bayes:
 
-    def __init__(self, train_X, train_Y, stop_words_list):
+    def __init__(self, train_X, train_Y, stop_words_list = stopwords.words('english')):
         self.train_X = train_X
         self.train_Y = train_Y
         self.classes = list(set(train_Y))
@@ -61,7 +64,7 @@ class Naive_Bayes:
         return np.mean(predicted == target) * 100.00
 
     # predict
-    def predict_class(self, test_sentences_list, preprocess=True, laplacian=True, alpha=1.0):
+    def predict_class(self, test_sentences_list, preprocess=True, laplacian=True, alpha=0.5):
         # Naive Bayes: for all classes, argmax P(c)*P(d|c)
         predicted_classes = np.zeros(len(test_sentences_list), dtype=np.object)
         for index, test_sentence in enumerate(test_sentences_list):
@@ -93,24 +96,35 @@ def create_and_save_submission(predictions, file_name="submission.csv"):
     sub_df = pd.DataFrame(data=list(zip(ids, predictions)), columns=["Id","Category"])
     sub_df.to_csv(file_name, index=False)
 
+def evaluate_model(Model, X, y):
+    
+    kfold = KFold(
+        n_splits=4,
+        shuffle=True,
+        random_state=42
+    )
+    
+    accuracy = []
+
+    for train_index, test_index in kfold.split(X):
+        X_train, X_test = X[train_index], X[test_index]
+        y_train, y_test = y[train_index], y[test_index]
+        
+        my_model = Model(X_train, y_train)
+        pred = my_model.predict_class(X_test)
+        accuracy.append(my_model.accuracy(pred, y_test))
+    
+    return np.mean(accuracy)
+    
 
 def main():
-    train_data_path = "data/data_train.pkl"
-    test_data_path = "data/data_test.pkl"
+    train_data = pd.read_pickle(TRAIN_DATA_PATH)
+    test_data = pd.read_pickle(TEST_DATA_PATH)
+    
+    X = np.array(train_data[0])
+    y = np.array(train_data[1])
 
-    # read train dataset
-    train_data = pd.read_pickle(train_data_path)
-    test_data = pd.read_pickle(test_data_path)
-    train_X = np.array(train_data[0])
-    train_Y = np.array(train_data[1])
-    # get nltk stop words
-    nltk_stop_words_list = stopwords.words('english')
-
-    # create train and validation set
-    X_train, X_test, y_train, y_test = train_test_split(train_X, train_Y, test_size=0.20, random_state=42)
-    naive_bayes = Naive_Bayes(train_X, train_Y, nltk_stop_words_list)
-    pred = naive_bayes.predict_class(X_test, preprocess=True, laplacian=True, alpha=0.5)
-    accuracy = naive_bayes.accuracy(pred, y_test)
+    accuracy = evaluate_model(Naive_Bayes, X, y)
     print("Accuracy: %.2f"%accuracy)
 
 if  __name__ == "__main__":
