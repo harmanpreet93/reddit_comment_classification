@@ -2,22 +2,23 @@ import re
 import numpy as np
 from collections import Counter
 import pandas as pd
-from nltk.corpus import stopwords
 import random
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
+from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
+from nltk import download
 
 TRAIN_DATA_PATH = "data/data_train.pkl"
 TEST_DATA_PATH = "data/data_test.pkl"
 
 class Naive_Bayes:
 
-    def __init__(self, train_X, train_Y, stop_words_list = stopwords.words('english')):
+    def __init__(self, train_X, train_Y, ):
         self.train_X = train_X
         self.train_Y = train_Y
         self.classes = list(set(train_Y))
-        self.stop_words_list = stop_words_list
+        self.stop_words_list = stopwords.words('english')
         self.stemmer = PorterStemmer()
         self.word_stats, self.num_unique_words_in_class, self.total_word_count_per_class = self.get_word_count_per_class()
         self.priors = self.get_priors()
@@ -123,6 +124,7 @@ def predict_test_labels(Model, X, y, X_test):
     create_and_save_submission(predicitions)
 
 def main():
+    download('stopwords') # nltk
     train_data = pd.read_pickle(TRAIN_DATA_PATH)
     test_data  = pd.read_pickle(TEST_DATA_PATH)
 
