@@ -2,8 +2,8 @@ import re
 import numpy as np
 from collections import Counter
 import pandas as pd
-import random
-from sklearn.model_selection import train_test_split
+# import random
+# from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
@@ -51,7 +51,7 @@ class Naive_Bayes:
             for review in self.train_X[self.train_Y == class_]:
                 word_list += self.preprocess_sentence(review)
 
-            # count the number of unique words and occurences of each word
+            # count the number of unique words and occurrences of each word
             num_unique_words_in_class[class_] = len(set(word_list))
             word_stats[class_] = Counter(word_list)
 
@@ -98,6 +98,7 @@ def create_and_save_submission(predictions, file_name="submission.csv"):
 
 # Return mean model performance after k-fold cross-validation
 def evaluate_model(Model, X, y):
+    print("Evaluating model performance using k-fold...")
     
     kfold = KFold(
         n_splits=4,
@@ -112,19 +113,21 @@ def evaluate_model(Model, X, y):
         y_train, y_test = y[train_index], y[test_index]
         
         my_model = Model(X_train, y_train)
-        predicitions = my_model.predict_class(X_test)
-        accuracy.append(my_model.accuracy(predicitions, y_test))
+        predictions = my_model.predict_class(X_test)
+        accuracy.append(my_model.accuracy(predictions, y_test))
     
     return np.mean(accuracy)
 
 # Train with full dataset; write test data label predictions to .csv file
 def predict_test_labels(Model, X, y, X_test):
     my_model = Model(X, y)
-    predicitions = my_model.predict_class(X_test)
-    create_and_save_submission(predicitions)
+    predictions = my_model.predict_class(X_test)
+    create_and_save_submission(predictions)
 
 def main():
+    print("Downloading stop-words..")
     download('stopwords') # nltk
+
     train_data = pd.read_pickle(TRAIN_DATA_PATH)
     test_data  = pd.read_pickle(TEST_DATA_PATH)
 
