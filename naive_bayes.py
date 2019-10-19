@@ -65,13 +65,13 @@ class Naive_Bayes:
         return np.mean(predicted == target) * 100.00
 
     def compute_probability(self, class_, word_list, laplacian, alpha):
-        prob = self.priors[class_]
+        prob = np.log(self.priors[class_])
         # override alpha value by setting it 0 if it isn't laplacian
         if not laplacian:
             alpha = 0.0
         denominator_count = self.total_word_count_per_class[class_] + alpha*self.num_unique_words_in_class[class_]
         for word in word_list:
-            prob *= ((self.word_stats[class_][word] + alpha) / denominator_count)
+            prob += np.log((self.word_stats[class_][word] + alpha) / denominator_count)
         
         return prob
     
@@ -120,6 +120,7 @@ def evaluate_model(Model, X, y):
 
 # Train with full dataset; write test data label predictions to .csv file
 def predict_test_labels(Model, X, y, X_test):
+    print("Predicting test labels and writing to submission.csv...")
     my_model = Model(X, y)
     predictions = my_model.predict_class(X_test)
     create_and_save_submission(predictions)
@@ -136,8 +137,8 @@ def main():
     X_test = np.array(test_data)
 
     # Print performance of model after k-fold cross-validation
-    accuracy = evaluate_model(Naive_Bayes, X, y)
-    print("Accuracy: %.2f"%accuracy)
+    # accuracy = evaluate_model(Naive_Bayes, X, y)
+    # print("Accuracy: %.2f"%accuracy)
 
     # Train with full dataset; write test data label predictions to .csv file
     predict_test_labels(Naive_Bayes, X, y, X_test)
