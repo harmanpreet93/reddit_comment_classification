@@ -1,4 +1,5 @@
-submission.csv
+submission_random.csv
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
 .DS_Store
+submission.csv
