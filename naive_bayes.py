@@ -137,8 +137,8 @@ def main():
     X_test = np.array(test_data)
 
     # Print performance of model after k-fold cross-validation
-    # accuracy = evaluate_model(Naive_Bayes, X, y)
-    # print("Accuracy: %.2f"%accuracy)
+    accuracy = evaluate_model(Naive_Bayes, X, y)
+    print("Accuracy: %.2f"%accuracy)
 
     # Train with full dataset; write test data label predictions to .csv file
     predict_test_labels(Naive_Bayes, X, y, X_test)
