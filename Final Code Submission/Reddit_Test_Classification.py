@@ -26,8 +26,9 @@ y = le.fit_transform(np.array(train_data[1]))
 
 Remove stop words and stem
 """
-
+from nltk import download
 from nltk.corpus import stopwords
+download('stopwords') # nltk
 
 stop_words_list = stopwords.words('english')
 pattern = re.compile(r'\b\w\w+\b')
