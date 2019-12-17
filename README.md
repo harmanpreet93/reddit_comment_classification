@@ -1,4 +1,4 @@
-### Comparative Analysis of Machine Learning Classifiers for Reddit Comment Classification
+### Comparative Analysis of Machine Learning Algorithms for Reddit Comment Classification
 
 **Team**
 - Harmanpreet Singh (20164950)
