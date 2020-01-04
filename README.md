@@ -4,7 +4,7 @@
 - Harmanpreet Singh (20164950)
 - Alexander Peplowski (20148127)  
 
-We examine multiple classification algothims such as Naive Bayes with smoothing, Linear Support Vector Classifier (SVC), Logistic Regression, Multi-Layer Perceptron (MLP) and sequence models. Investigated feature extraction approaches such as term-frequency inverse document frequency (tf-idf) and self-trained word2vec embeddings.  
+We examine multiple classification algorithms such as Naive Bayes with smoothing, Linear Support Vector Classifier (SVC), Logistic Regression, Multi-Layer Perceptron (MLP) and sequence models. Investigated feature extraction approaches such as term-frequency inverse document frequency (tf-idf) and self-trained word2vec embeddings.  
 
 ![Score Comparison](https://github.com/harmanpreet93/reddit_comment_classification/blob/master/comparisons.png)
 
